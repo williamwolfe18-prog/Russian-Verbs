@@ -1,0 +1,1714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Russian Verbs">
+<title>Russian Verb Conjugation Practice</title>
+<style>
+  :root {
+    --bg: #0f0f1a;
+    --surface: #1a1a2e;
+    --card: #16213e;
+    --accent: #e94560;
+    --accent2: #0f3460;
+    --gold: #f5a623;
+    --green: #27ae60;
+    --red: #e74c3c;
+    --text: #eaeaea;
+    --muted: #8892a4;
+    --border: #2a2a4a;
+    --input-bg: #0d0d1f;
+    --correct: #1a4a2e;
+    --wrong: #4a1a1a;
+    --radius: 14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overscroll-behavior: none;
+  }
+
+  #app {
+    width: 100%;
+    max-width: 480px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: env(safe-area-inset-bottom, 20px);
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--surface);
+    padding: 14px 20px 12px;
+    padding-top: calc(14px + env(safe-area-inset-top, 0px));
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  header h1 {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.3px;
+  }
+
+  .stats-bar {
+    display: flex;
+    gap: 12px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .stats-bar span b { color: var(--text); }
+
+  #menu-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 22px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 2px 6px;
+  }
+
+  /* ── SCREENS ── */
+  .screen { display: none; flex-direction: column; flex: 1; }
+  .screen.active { display: flex; }
+
+  /* ── HOME SCREEN ── */
+  #home-screen {
+    align-items: center;
+    justify-content: flex-start;
+    padding: 24px 20px;
+    gap: 20px;
+  }
+
+  .logo-area {
+    text-align: center;
+    padding: 10px 0;
+  }
+
+  .logo-area .flag { font-size: 48px; }
+  .logo-area h2 { font-size: 22px; font-weight: 800; margin-top: 8px; }
+  .logo-area p { font-size: 14px; color: var(--muted); margin-top: 4px; }
+
+  .mode-card {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+  }
+
+  .mode-card h3 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 12px;
+  }
+
+  .option-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+
+  .option-btn {
+    background: var(--accent2);
+    border: 2px solid transparent;
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 13px;
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-weight: 500;
+  }
+
+  .option-btn.selected {
+    border-color: var(--accent);
+    background: rgba(233,69,96,0.2);
+    color: var(--accent);
+  }
+
+  .start-btn {
+    width: 100%;
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius);
+    color: white;
+    font-size: 17px;
+    font-weight: 700;
+    padding: 16px;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    letter-spacing: 0.3px;
+  }
+
+  .start-btn:active { opacity: 0.85; }
+
+  .progress-summary {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+  }
+
+  .progress-summary h3 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 10px;
+  }
+
+  .prog-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    text-align: center;
+  }
+
+  .prog-item .num {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+  }
+
+  .prog-item .lbl {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* ── PRACTICE SCREEN ── */
+  #practice-screen {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 16px 100px;
+    gap: 14px;
+  }
+
+  .verb-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 18px;
+    text-align: center;
+  }
+
+  .verb-pair {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 6px;
+    letter-spacing: -0.3px;
+  }
+
+  .verb-meaning {
+    font-size: 15px;
+    color: var(--gold);
+    font-style: italic;
+    margin-bottom: 4px;
+  }
+
+  .verb-aspect-label {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .tense-section {
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .tense-header {
+    background: var(--accent2);
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .aspect-tag {
+    font-size: 11px;
+    background: rgba(255,255,255,0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  .conjugation-row {
+    display: flex;
+    align-items: center;
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border);
+    gap: 10px;
+    transition: background 0.2s;
+  }
+
+  .conjugation-row:last-child { border-bottom: none; }
+  .conjugation-row.correct { background: var(--correct); }
+  .conjugation-row.wrong { background: var(--wrong); }
+
+  .pronoun {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--muted);
+    min-width: 56px;
+    flex-shrink: 0;
+  }
+
+  .conj-input {
+    flex: 1;
+    background: var(--input-bg);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 15px;
+    padding: 8px 12px;
+    outline: none;
+    font-family: inherit;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+
+  .conj-input:focus { border-color: var(--accent); }
+  .conj-input.correct-input { border-color: var(--green); color: var(--green); }
+  .conj-input.wrong-input { border-color: var(--red); }
+
+  .answer-reveal {
+    font-size: 14px;
+    color: var(--green);
+    min-width: 90px;
+    text-align: right;
+    flex-shrink: 0;
+    display: none;
+  }
+
+  .conjugation-row.wrong .answer-reveal,
+  .conjugation-row.correct .answer-reveal { display: block; }
+
+  .action-bar {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 12px 16px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    display: flex;
+    gap: 10px;
+    z-index: 99;
+  }
+
+  .action-btn {
+    flex: 1;
+    padding: 13px;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+
+  .action-btn:active { opacity: 0.8; }
+  .btn-check { background: var(--accent); color: white; }
+  .btn-skip { background: var(--border); color: var(--muted); }
+  .btn-next { background: var(--green); color: white; flex: 2; }
+
+  .progress-bar-wrap {
+    width: 100%;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 4px;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+  }
+
+  .session-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  /* ── RESULTS ── */
+  .result-banner {
+    display: none;
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 16px;
+    text-align: center;
+    gap: 6px;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .result-banner.visible { display: flex; }
+
+  .result-emoji { font-size: 36px; }
+  .result-score { font-size: 20px; font-weight: 800; }
+  .result-score.all-correct { color: var(--green); }
+  .result-score.partial { color: var(--gold); }
+  .result-score.poor { color: var(--red); }
+
+  /* ── MENU SCREEN ── */
+  #menu-screen {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 200;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  #menu-screen.active { display: flex; }
+
+  .menu-panel {
+    background: var(--surface);
+    border-radius: 20px 20px 0 0;
+    width: 100%;
+    max-width: 480px;
+    padding: 20px;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .menu-title {
+    font-size: 17px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 20px;
+    color: var(--gold);
+  }
+
+  .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    color: var(--text);
+    font-size: 15px;
+  }
+
+  .menu-item:last-child { border-bottom: none; }
+  .menu-item .icon { font-size: 22px; width: 32px; text-align: center; }
+  .menu-item .danger { color: var(--red); }
+
+  /* ── KEYBOARD AVOID ── */
+  @media (max-height: 500px) {
+    .verb-card { padding: 10px; }
+    .verb-pair { font-size: 20px; }
+  }
+
+  /* Prevent zoom on input focus */
+  input { font-size: 16px !important; }
+
+  .kbd-shortcut {
+    background: var(--accent2);
+    border-radius: var(--radius);
+    padding: 10px 16px;
+    font-size: 13px;
+    color: var(--muted);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header>
+    <h1>🇷🇺 Russian Verbs</h1>
+    <div class="stats-bar">
+      <span id="hdr-correct"><b>0</b> ✓</span>
+      <span id="hdr-streak"><b>0</b> 🔥</span>
+    </div>
+    <button id="menu-btn" onclick="toggleMenu()">☰</button>
+  </header>
+
+  <!-- HOME SCREEN -->
+  <div id="home-screen" class="screen active">
+    <div class="logo-area">
+      <div class="flag">🇷🇺</div>
+      <h2>Verb Conjugation</h2>
+      <p>300 essential Russian verbs</p>
+    </div>
+
+    <div class="mode-card">
+      <h3>Tense / Mode</h3>
+      <div class="option-row">
+        <button class="option-btn selected" data-group="tense" data-val="present">Present (Impfv)</button>
+        <button class="option-btn selected" data-group="tense" data-val="future">Future (Pfv)</button>
+        <button class="option-btn" data-group="tense" data-val="past">Past</button>
+      </div>
+    </div>
+
+    <div class="mode-card">
+      <h3>Verb Set</h3>
+      <div class="option-row">
+        <button class="option-btn selected" data-group="set" data-val="all">All 300</button>
+        <button class="option-btn" data-group="set" data-val="common">Top 100</button>
+        <button class="option-btn" data-group="set" data-val="weak">Weakest</button>
+        <button class="option-btn" data-group="set" data-val="unseen">Not Yet Seen</button>
+      </div>
+    </div>
+
+    <div class="mode-card">
+      <h3>Session Length</h3>
+      <div class="option-row">
+        <button class="option-btn selected" data-group="length" data-val="10">10 verbs</button>
+        <button class="option-btn" data-group="length" data-val="20">20 verbs</button>
+        <button class="option-btn" data-group="length" data-val="50">50 verbs</button>
+        <button class="option-btn" data-group="length" data-val="all">All</button>
+      </div>
+    </div>
+
+    <button class="start-btn" onclick="startSession()">Start Practice →</button>
+
+    <div class="progress-summary">
+      <h3>My Progress</h3>
+      <div class="prog-grid">
+        <div class="prog-item">
+          <div class="num" id="prog-seen">0</div>
+          <div class="lbl">Verbs Seen</div>
+        </div>
+        <div class="prog-item">
+          <div class="num" id="prog-mastered">0</div>
+          <div class="lbl">Mastered</div>
+        </div>
+        <div class="prog-item">
+          <div class="num" id="prog-accuracy">—</div>
+          <div class="lbl">Accuracy</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRACTICE SCREEN -->
+  <div id="practice-screen" class="screen">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+    <div class="session-info">
+      <span id="sess-count">Verb 1 of 10</span>
+      <span id="sess-score">Score: 0/0</span>
+    </div>
+
+    <div class="verb-card">
+      <div class="verb-pair" id="verb-display">ходить / пойти</div>
+      <div class="verb-meaning" id="verb-meaning">to go (on foot)</div>
+      <div class="verb-aspect-label" id="verb-aspect-label">imperfective / perfective</div>
+    </div>
+
+    <div class="result-banner" id="result-banner">
+      <div class="result-emoji" id="result-emoji">🎉</div>
+      <div class="result-score" id="result-score"></div>
+      <div id="result-text" style="font-size:13px;color:var(--muted)"></div>
+    </div>
+
+    <!-- Present tense (imperfective) -->
+    <div class="tense-section" id="present-section">
+      <div class="tense-header">
+        <span id="present-tense-label">Present Tense</span>
+        <span class="aspect-tag" id="present-aspect-tag">imperfective</span>
+      </div>
+      <div id="present-rows"></div>
+    </div>
+
+    <!-- Future/past section -->
+    <div class="tense-section" id="future-section">
+      <div class="tense-header">
+        <span id="future-tense-label">Future Tense</span>
+        <span class="aspect-tag" id="future-aspect-tag">perfective</span>
+      </div>
+      <div id="future-rows"></div>
+    </div>
+
+  </div>
+
+  <!-- ACTION BAR (shown during practice) -->
+  <div class="action-bar" id="action-bar" style="display:none">
+    <button class="action-btn btn-skip" onclick="skipVerb()">Skip</button>
+    <button class="action-btn btn-check" id="check-btn" onclick="checkAnswers()">Check</button>
+  </div>
+
+  <!-- MENU OVERLAY -->
+  <div id="menu-screen" onclick="closeMenuIfBg(event)">
+    <div class="menu-panel">
+      <div class="menu-title">Menu</div>
+      <div class="menu-item" onclick="showHome(); closeMenu()">
+        <span class="icon">🏠</span> Home
+      </div>
+      <div class="menu-item" onclick="resetProgress(); closeMenu()">
+        <span class="icon">🔄</span> Reset All Progress
+      </div>
+      <div class="menu-item" onclick="closeMenu()">
+        <span class="icon">✕</span> Close
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  VERB DATABASE  — 300 common Russian verbs
+//  Format: { imp, pf, en, conjugations: { pres[], fut[], past[] } }
+//  pres/fut arrays: [ya, ty, on, my, vy, oni]
+//  past arrays: [m, f, n, pl]
+// ═══════════════════════════════════════════════════════════
+
+const VERBS = [
+  // 1-20: CORE MOTION
+  {imp:"ходить",pf:"пойти",en:"to go (on foot)",
+   pres:["хожу","ходишь","ходит","ходим","ходите","ходят"],
+   fut:["пойду","пойдёшь","пойдёт","пойдём","пойдёте","пойдут"],
+   past:["ходил","ходила","ходило","ходили"]},
+  {imp:"идти",pf:"пойти",en:"to go/walk (now)",
+   pres:["иду","идёшь","идёт","идём","идёте","идут"],
+   fut:["пойду","пойдёшь","пойдёт","пойдём","пойдёте","пойдут"],
+   past:["шёл","шла","шло","шли"]},
+  {imp:"ехать",pf:"поехать",en:"to go (by vehicle)",
+   pres:["еду","едешь","едет","едем","едете","едут"],
+   fut:["поеду","поедешь","поедет","поедем","поедете","поедут"],
+   past:["ехал","ехала","ехало","ехали"]},
+  {imp:"бежать",pf:"побежать",en:"to run",
+   pres:["бегу","бежишь","бежит","бежим","бежите","бегут"],
+   fut:["побегу","побежишь","побежит","побежим","побежите","побегут"],
+   past:["бежал","бежала","бежало","бежали"]},
+  {imp:"летать",pf:"полететь",en:"to fly",
+   pres:["летаю","летаешь","летает","летаем","летаете","летают"],
+   fut:["полечу","полетишь","полетит","полетим","полетите","полетят"],
+   past:["летал","летала","летало","летали"]},
+  {imp:"плавать",pf:"поплыть",en:"to swim",
+   pres:["плаваю","плаваешь","плавает","плаваем","плаваете","плавают"],
+   fut:["поплыву","поплывёшь","поплывёт","поплывём","поплывёте","поплывут"],
+   past:["плавал","плавала","плавало","плавали"]},
+  {imp:"возвращаться",pf:"вернуться",en:"to return",
+   pres:["возвращаюсь","возвращаешься","возвращается","возвращаемся","возвращаетесь","возвращаются"],
+   fut:["вернусь","вернёшься","вернётся","вернёмся","вернётесь","вернутся"],
+   past:["возвращался","возвращалась","возвращалось","возвращались"]},
+  {imp:"приходить",pf:"прийти",en:"to arrive (on foot)",
+   pres:["прихожу","приходишь","приходит","приходим","приходите","приходят"],
+   fut:["приду","придёшь","придёт","придём","придёте","придут"],
+   past:["приходил","приходила","приходило","приходили"]},
+  {imp:"уходить",pf:"уйти",en:"to leave (on foot)",
+   pres:["ухожу","уходишь","уходит","уходим","уходите","уходят"],
+   fut:["уйду","уйдёшь","уйдёт","уйдём","уйдёте","уйдут"],
+   past:["уходил","уходила","уходило","уходили"]},
+  {imp:"выходить",pf:"выйти",en:"to go out / exit",
+   pres:["выхожу","выходишь","выходит","выходим","выходите","выходят"],
+   fut:["выйду","выйдешь","выйдет","выйдем","выйдете","выйдут"],
+   past:["выходил","выходила","выходило","выходили"]},
+
+  // 11-30: COMMUNICATION
+  {imp:"говорить",pf:"сказать",en:"to speak / say",
+   pres:["говорю","говоришь","говорит","говорим","говорите","говорят"],
+   fut:["скажу","скажешь","скажет","скажем","скажете","скажут"],
+   past:["говорил","говорила","говорило","говорили"]},
+  {imp:"спрашивать",pf:"спросить",en:"to ask",
+   pres:["спрашиваю","спрашиваешь","спрашивает","спрашиваем","спрашиваете","спрашивают"],
+   fut:["спрошу","спросишь","спросит","спросим","спросите","спросят"],
+   past:["спрашивал","спрашивала","спрашивало","спрашивали"]},
+  {imp:"отвечать",pf:"ответить",en:"to answer",
+   pres:["отвечаю","отвечаешь","отвечает","отвечаем","отвечаете","отвечают"],
+   fut:["отвечу","ответишь","ответит","ответим","ответите","ответят"],
+   past:["отвечал","отвечала","отвечало","отвечали"]},
+  {imp:"писать",pf:"написать",en:"to write",
+   pres:["пишу","пишешь","пишет","пишем","пишете","пишут"],
+   fut:["напишу","напишешь","напишет","напишем","напишете","напишут"],
+   past:["писал","писала","писало","писали"]},
+  {imp:"читать",pf:"прочитать",en:"to read",
+   pres:["читаю","читаешь","читает","читаем","читаете","читают"],
+   fut:["прочитаю","прочитаешь","прочитает","прочитаем","прочитаете","прочитают"],
+   past:["читал","читала","читало","читали"]},
+  {imp:"слушать",pf:"послушать",en:"to listen",
+   pres:["слушаю","слушаешь","слушает","слушаем","слушаете","слушают"],
+   fut:["послушаю","послушаешь","послушает","послушаем","послушаете","послушают"],
+   past:["слушал","слушала","слушало","слушали"]},
+  {imp:"слышать",pf:"услышать",en:"to hear",
+   pres:["слышу","слышишь","слышит","слышим","слышите","слышат"],
+   fut:["услышу","услышишь","услышит","услышим","услышите","услышат"],
+   past:["слышал","слышала","слышало","слышали"]},
+  {imp:"видеть",pf:"увидеть",en:"to see",
+   pres:["вижу","видишь","видит","видим","видите","видят"],
+   fut:["увижу","увидишь","увидит","увидим","увидите","увидят"],
+   past:["видел","видела","видело","видели"]},
+  {imp:"смотреть",pf:"посмотреть",en:"to look / watch",
+   pres:["смотрю","смотришь","смотрит","смотрим","смотрите","смотрят"],
+   fut:["посмотрю","посмотришь","посмотрит","посмотрим","посмотрите","посмотрят"],
+   past:["смотрел","смотрела","смотрело","смотрели"]},
+  {imp:"звонить",pf:"позвонить",en:"to call (phone)",
+   pres:["звоню","звонишь","звонит","звоним","звоните","звонят"],
+   fut:["позвоню","позвонишь","позвонит","позвоним","позвоните","позвонят"],
+   past:["звонил","звонила","звонило","звонили"]},
+
+  // 31-50: COGNITIVE
+  {imp:"думать",pf:"подумать",en:"to think",
+   pres:["думаю","думаешь","думает","думаем","думаете","думают"],
+   fut:["подумаю","подумаешь","подумает","подумаем","подумаете","подумают"],
+   past:["думал","думала","думало","думали"]},
+  {imp:"знать",pf:"узнать",en:"to know",
+   pres:["знаю","знаешь","знает","знаем","знаете","знают"],
+   fut:["узнаю","узнаешь","узнает","узнаем","узнаете","узнают"],
+   past:["знал","знала","знало","знали"]},
+  {imp:"понимать",pf:"понять",en:"to understand",
+   pres:["понимаю","понимаешь","понимает","понимаем","понимаете","понимают"],
+   fut:["пойму","поймёшь","поймёт","поймём","поймёте","поймут"],
+   past:["понимал","понимала","понимало","понимали"]},
+  {imp:"помнить",pf:"вспомнить",en:"to remember",
+   pres:["помню","помнишь","помнит","помним","помните","помнят"],
+   fut:["вспомню","вспомнишь","вспомнит","вспомним","вспомните","вспомнят"],
+   past:["помнил","помнила","помнило","помнили"]},
+  {imp:"забывать",pf:"забыть",en:"to forget",
+   pres:["забываю","забываешь","забывает","забываем","забываете","забывают"],
+   fut:["забуду","забудешь","забудет","забудем","забудете","забудут"],
+   past:["забывал","забывала","забывало","забывали"]},
+  {imp:"учить",pf:"выучить",en:"to learn / study",
+   pres:["учу","учишь","учит","учим","учите","учат"],
+   fut:["выучу","выучишь","выучит","выучим","выучите","выучат"],
+   past:["учил","учила","учило","учили"]},
+  {imp:"учиться",pf:"научиться",en:"to study / learn (intr.)",
+   pres:["учусь","учишься","учится","учимся","учитесь","учатся"],
+   fut:["научусь","научишься","научится","научимся","научитесь","научатся"],
+   past:["учился","училась","училось","учились"]},
+  {imp:"объяснять",pf:"объяснить",en:"to explain",
+   pres:["объясняю","объясняешь","объясняет","объясняем","объясняете","объясняют"],
+   fut:["объясню","объяснишь","объяснит","объясним","объясните","объяснят"],
+   past:["объяснял","объясняла","объясняло","объясняли"]},
+  {imp:"выбирать",pf:"выбрать",en:"to choose",
+   pres:["выбираю","выбираешь","выбирает","выбираем","выбираете","выбирают"],
+   fut:["выберу","выберешь","выберет","выберем","выберете","выберут"],
+   past:["выбирал","выбирала","выбирало","выбирали"]},
+  {imp:"решать",pf:"решить",en:"to decide / solve",
+   pres:["решаю","решаешь","решает","решаем","решаете","решают"],
+   fut:["решу","решишь","решит","решим","решите","решат"],
+   past:["решал","решала","решало","решали"]},
+
+  // 51-70: DAILY LIFE
+  {imp:"есть",pf:"съесть",en:"to eat",
+   pres:["ем","ешь","ест","едим","едите","едят"],
+   fut:["съем","съешь","съест","съедим","съедите","съедят"],
+   past:["ел","ела","ело","ели"]},
+  {imp:"пить",pf:"выпить",en:"to drink",
+   pres:["пью","пьёшь","пьёт","пьём","пьёте","пьют"],
+   fut:["выпью","выпьешь","выпьет","выпьем","выпьете","выпьют"],
+   past:["пил","пила","пило","пили"]},
+  {imp:"готовить",pf:"приготовить",en:"to prepare / cook",
+   pres:["готовлю","готовишь","готовит","готовим","готовите","готовят"],
+   fut:["приготовлю","приготовишь","приготовит","приготовим","приготовите","приготовят"],
+   past:["готовил","готовила","готовило","готовили"]},
+  {imp:"покупать",pf:"купить",en:"to buy",
+   pres:["покупаю","покупаешь","покупает","покупаем","покупаете","покупают"],
+   fut:["куплю","купишь","купит","купим","купите","купят"],
+   past:["покупал","покупала","покупало","покупали"]},
+  {imp:"продавать",pf:"продать",en:"to sell",
+   pres:["продаю","продаёшь","продаёт","продаём","продаёте","продают"],
+   fut:["продам","продашь","продаст","продадим","продадите","продадут"],
+   past:["продавал","продавала","продавало","продавали"]},
+  {imp:"платить",pf:"заплатить",en:"to pay",
+   pres:["плачу","платишь","платит","платим","платите","платят"],
+   fut:["заплачу","заплатишь","заплатит","заплатим","заплатите","заплатят"],
+   past:["платил","платила","платило","платили"]},
+  {imp:"работать",pf:"поработать",en:"to work",
+   pres:["работаю","работаешь","работает","работаем","работаете","работают"],
+   fut:["поработаю","поработаешь","поработает","поработаем","поработаете","поработают"],
+   past:["работал","работала","работало","работали"]},
+  {imp:"отдыхать",pf:"отдохнуть",en:"to rest",
+   pres:["отдыхаю","отдыхаешь","отдыхает","отдыхаем","отдыхаете","отдыхают"],
+   fut:["отдохну","отдохнёшь","отдохнёт","отдохнём","отдохнёте","отдохнут"],
+   past:["отдыхал","отдыхала","отдыхало","отдыхали"]},
+  {imp:"спать",pf:"поспать",en:"to sleep",
+   pres:["сплю","спишь","спит","спим","спите","спят"],
+   fut:["посплю","поспишь","поспит","поспим","поспите","поспят"],
+   past:["спал","спала","спало","спали"]},
+  {imp:"просыпаться",pf:"проснуться",en:"to wake up",
+   pres:["просыпаюсь","просыпаешься","просыпается","просыпаемся","просыпаетесь","просыпаются"],
+   fut:["проснусь","проснёшься","проснётся","проснёмся","проснётесь","проснутся"],
+   past:["просыпался","просыпалась","просыпалось","просыпались"]},
+
+  // 71-90: EMOTIONS / STATES
+  {imp:"любить",pf:"полюбить",en:"to love / like",
+   pres:["люблю","любишь","любит","любим","любите","любят"],
+   fut:["полюблю","полюбишь","полюбит","полюбим","полюбите","полюбят"],
+   past:["любил","любила","любило","любили"]},
+  {imp:"хотеть",pf:"захотеть",en:"to want",
+   pres:["хочу","хочешь","хочет","хотим","хотите","хотят"],
+   fut:["захочу","захочешь","захочет","захотим","захотите","захотят"],
+   past:["хотел","хотела","хотело","хотели"]},
+  {imp:"нравиться",pf:"понравиться",en:"to please / to like (dative)",
+   pres:["нравлюсь","нравишься","нравится","нравимся","нравитесь","нравятся"],
+   fut:["понравлюсь","понравишься","понравится","понравимся","понравитесь","понравятся"],
+   past:["нравился","нравилась","нравилось","нравились"]},
+  {imp:"бояться",pf:"испугаться",en:"to be afraid",
+   pres:["боюсь","боишься","боится","боимся","боитесь","боятся"],
+   fut:["испугаюсь","испугаешься","испугается","испугаемся","испугаетесь","испугаются"],
+   past:["боялся","боялась","боялось","боялись"]},
+  {imp:"радоваться",pf:"обрадоваться",en:"to rejoice / be glad",
+   pres:["радуюсь","радуешься","радуется","радуемся","радуетесь","радуются"],
+   fut:["обрадуюсь","обрадуешься","обрадуется","обрадуемся","обрадуетесь","обрадуются"],
+   past:["радовался","радовалась","радовалось","радовались"]},
+  {imp:"беспокоиться",pf:"побеспокоиться",en:"to worry",
+   pres:["беспокоюсь","беспокоишься","беспокоится","беспокоимся","беспокоитесь","беспокоятся"],
+   fut:["побеспокоюсь","побеспокоишься","побеспокоится","побеспокоимся","побеспокоитесь","побеспокоятся"],
+   past:["беспокоился","беспокоилась","беспокоилось","беспокоились"]},
+  {imp:"удивляться",pf:"удивиться",en:"to be surprised",
+   pres:["удивляюсь","удивляешься","удивляется","удивляемся","удивляетесь","удивляются"],
+   fut:["удивлюсь","удивишься","удивится","удивимся","удивитесь","удивятся"],
+   past:["удивлялся","удивлялась","удивлялось","удивлялись"]},
+  {imp:"улыбаться",pf:"улыбнуться",en:"to smile",
+   pres:["улыбаюсь","улыбаешься","улыбается","улыбаемся","улыбаетесь","улыбаются"],
+   fut:["улыбнусь","улыбнёшься","улыбнётся","улыбнёмся","улыбнётесь","улыбнутся"],
+   past:["улыбался","улыбалась","улыбалось","улыбались"]},
+  {imp:"смеяться",pf:"засмеяться",en:"to laugh",
+   pres:["смеюсь","смеёшься","смеётся","смеёмся","смеётесь","смеются"],
+   fut:["засмеюсь","засмеёшься","засмеётся","засмеёмся","засмеётесь","засмеются"],
+   past:["смеялся","смеялась","смеялось","смеялись"]},
+  {imp:"плакать",pf:"заплакать",en:"to cry",
+   pres:["плачу","плачешь","плачет","плачем","плачете","плачут"],
+   fut:["заплачу","заплачешь","заплачет","заплачем","заплачете","заплачут"],
+   past:["плакал","плакала","плакало","плакали"]},
+
+  // 91-110: ACTIONS
+  {imp:"делать",pf:"сделать",en:"to do / make",
+   pres:["делаю","делаешь","делает","делаем","делаете","делают"],
+   fut:["сделаю","сделаешь","сделает","сделаем","сделаете","сделают"],
+   past:["делал","делала","делало","делали"]},
+  {imp:"брать",pf:"взять",en:"to take",
+   pres:["беру","берёшь","берёт","берём","берёте","берут"],
+   fut:["возьму","возьмёшь","возьмёт","возьмём","возьмёте","возьмут"],
+   past:["брал","брала","брало","брали"]},
+  {imp:"давать",pf:"дать",en:"to give",
+   pres:["даю","даёшь","даёт","даём","даёте","дают"],
+   fut:["дам","дашь","даст","дадим","дадите","дадут"],
+   past:["давал","давала","давало","давали"]},
+  {imp:"получать",pf:"получить",en:"to receive / get",
+   pres:["получаю","получаешь","получает","получаем","получаете","получают"],
+   fut:["получу","получишь","получит","получим","получите","получат"],
+   past:["получал","получала","получало","получали"]},
+  {imp:"открывать",pf:"открыть",en:"to open",
+   pres:["открываю","открываешь","открывает","открываем","открываете","открывают"],
+   fut:["открою","откроешь","откроет","откроем","откроете","откроют"],
+   past:["открывал","открывала","открывало","открывали"]},
+  {imp:"закрывать",pf:"закрыть",en:"to close",
+   pres:["закрываю","закрываешь","закрывает","закрываем","закрываете","закрывают"],
+   fut:["закрою","закроешь","закроет","закроем","закроете","закроют"],
+   past:["закрывал","закрывала","закрывало","закрывали"]},
+  {imp:"начинать",pf:"начать",en:"to begin",
+   pres:["начинаю","начинаешь","начинает","начинаем","начинаете","начинают"],
+   fut:["начну","начнёшь","начнёт","начнём","начнёте","начнут"],
+   past:["начинал","начинала","начинало","начинали"]},
+  {imp:"кончать",pf:"кончить",en:"to finish / end",
+   pres:["кончаю","кончаешь","кончает","кончаем","кончаете","кончают"],
+   fut:["кончу","кончишь","кончит","кончим","кончите","кончат"],
+   past:["кончал","кончала","кончало","кончали"]},
+  {imp:"продолжать",pf:"продолжить",en:"to continue",
+   pres:["продолжаю","продолжаешь","продолжает","продолжаем","продолжаете","продолжают"],
+   fut:["продолжу","продолжишь","продолжит","продолжим","продолжите","продолжат"],
+   past:["продолжал","продолжала","продолжало","продолжали"]},
+  {imp:"помогать",pf:"помочь",en:"to help",
+   pres:["помогаю","помогаешь","помогает","помогаем","помогаете","помогают"],
+   fut:["помогу","поможешь","поможет","поможем","поможете","помогут"],
+   past:["помогал","помогала","помогало","помогали"]},
+
+  // 111-130: PHYSICAL
+  {imp:"стоять",pf:"постоять",en:"to stand",
+   pres:["стою","стоишь","стоит","стоим","стоите","стоят"],
+   fut:["постою","постоишь","постоит","постоим","постоите","постоят"],
+   past:["стоял","стояла","стояло","стояли"]},
+  {imp:"сидеть",pf:"посидеть",en:"to sit",
+   pres:["сижу","сидишь","сидит","сидим","сидите","сидят"],
+   fut:["посижу","посидишь","посидит","посидим","посидите","посидят"],
+   past:["сидел","сидела","сидело","сидели"]},
+  {imp:"лежать",pf:"полежать",en:"to lie (down)",
+   pres:["лежу","лежишь","лежит","лежим","лежите","лежат"],
+   fut:["полежу","полежишь","полежит","полежим","полежите","полежат"],
+   past:["лежал","лежала","лежало","лежали"]},
+  {imp:"садиться",pf:"сесть",en:"to sit down",
+   pres:["сажусь","садишься","садится","садимся","садитесь","садятся"],
+   fut:["сяду","сядешь","сядет","сядем","сядете","сядут"],
+   past:["садился","садилась","садилось","садились"]},
+  {imp:"вставать",pf:"встать",en:"to get up / stand up",
+   pres:["встаю","встаёшь","встаёт","встаём","встаёте","встают"],
+   fut:["встану","встанешь","встанет","встанем","встанете","встанут"],
+   past:["вставал","вставала","вставало","вставали"]},
+  {imp:"падать",pf:"упасть",en:"to fall",
+   pres:["падаю","падаешь","падает","падаем","падаете","падают"],
+   fut:["упаду","упадёшь","упадёт","упадём","упадёте","упадут"],
+   past:["падал","падала","падало","падали"]},
+  {imp:"прыгать",pf:"прыгнуть",en:"to jump",
+   pres:["прыгаю","прыгаешь","прыгает","прыгаем","прыгаете","прыгают"],
+   fut:["прыгну","прыгнешь","прыгнет","прыгнем","прыгнете","прыгнут"],
+   past:["прыгал","прыгала","прыгало","прыгали"]},
+  {imp:"толкать",pf:"толкнуть",en:"to push",
+   pres:["толкаю","толкаешь","толкает","толкаем","толкаете","толкают"],
+   fut:["толкну","толкнёшь","толкнёт","толкнём","толкнёте","толкнут"],
+   past:["толкал","толкала","толкало","толкали"]},
+  {imp:"тянуть",pf:"потянуть",en:"to pull",
+   pres:["тяну","тянешь","тянет","тянем","тянете","тянут"],
+   fut:["потяну","потянешь","потянет","потянем","потянете","потянут"],
+   past:["тянул","тянула","тянуло","тянули"]},
+  {imp:"нести",pf:"принести",en:"to carry (on foot)",
+   pres:["несу","несёшь","несёт","несём","несёте","несут"],
+   fut:["принесу","принесёшь","принесёт","принесём","принесёте","принесут"],
+   past:["нёс","несла","несло","несли"]},
+
+  // 131-150: MORE CORE
+  {imp:"быть",pf:"побыть",en:"to be",
+   pres:["—","—","—","—","—","—"],
+   fut:["буду","будешь","будет","будем","будете","будут"],
+   past:["был","была","было","были"]},
+  {imp:"иметь",pf:"—",en:"to have",
+   pres:["имею","имеешь","имеет","имеем","имеете","имеют"],
+   fut:["буду иметь","будешь иметь","будет иметь","будем иметь","будете иметь","будут иметь"],
+   past:["имел","имела","имело","имели"]},
+  {imp:"становиться",pf:"стать",en:"to become",
+   pres:["становлюсь","становишься","становится","становимся","становитесь","становятся"],
+   fut:["стану","станешь","станет","станем","станете","станут"],
+   past:["становился","становилась","становилось","становились"]},
+  {imp:"казаться",pf:"показаться",en:"to seem",
+   pres:["кажусь","кажешься","кажется","кажемся","кажетесь","кажутся"],
+   fut:["покажусь","покажешься","покажется","покажемся","покажетесь","покажутся"],
+   past:["казался","казалась","казалось","казались"]},
+  {imp:"оставаться",pf:"остаться",en:"to remain / stay",
+   pres:["остаюсь","остаёшься","остаётся","остаёмся","остаётесь","остаются"],
+   fut:["останусь","останешься","останется","останемся","останетесь","останутся"],
+   past:["оставался","оставалась","оставалось","оставались"]},
+  {imp:"существовать",pf:"—",en:"to exist",
+   pres:["существую","существуешь","существует","существуем","существуете","существуют"],
+   fut:["буду существовать","будешь существовать","будет существовать","будем существовать","будете существовать","будут существовать"],
+   past:["существовал","существовала","существовало","существовали"]},
+  {imp:"жить",pf:"прожить",en:"to live",
+   pres:["живу","живёшь","живёт","живём","живёте","живут"],
+   fut:["проживу","проживёшь","проживёт","проживём","проживёте","проживут"],
+   past:["жил","жила","жило","жили"]},
+  {imp:"умирать",pf:"умереть",en:"to die",
+   pres:["умираю","умираешь","умирает","умираем","умираете","умирают"],
+   fut:["умру","умрёшь","умрёт","умрём","умрёте","умрут"],
+   past:["умирал","умирала","умирало","умирали"]},
+  {imp:"рождаться",pf:"родиться",en:"to be born",
+   pres:["рождаюсь","рождаешься","рождается","рождаемся","рождаетесь","рождаются"],
+   fut:["рожусь","родишься","родится","родимся","родитесь","родятся"],
+   past:["рождался","рождалась","рождалось","рождались"]},
+  {imp:"расти",pf:"вырасти",en:"to grow",
+   pres:["расту","растёшь","растёт","растём","растёте","растут"],
+   fut:["вырасту","вырастешь","вырастет","вырастем","вырастете","вырастут"],
+   past:["рос","росла","росло","росли"]},
+
+  // 151-170
+  {imp:"менять",pf:"изменить",en:"to change",
+   pres:["меняю","меняешь","меняет","меняем","меняете","меняют"],
+   fut:["изменю","изменишь","изменит","изменим","измените","изменят"],
+   past:["менял","меняла","меняло","меняли"]},
+  {imp:"использовать",pf:"использовать",en:"to use",
+   pres:["использую","используешь","использует","используем","используете","используют"],
+   fut:["использую","используешь","использует","используем","используете","используют"],
+   past:["использовал","использовала","использовало","использовали"]},
+  {imp:"находить",pf:"найти",en:"to find",
+   pres:["нахожу","находишь","находит","находим","находите","находят"],
+   fut:["найду","найдёшь","найдёт","найдём","найдёте","найдут"],
+   past:["находил","находила","находило","находили"]},
+  {imp:"терять",pf:"потерять",en:"to lose",
+   pres:["теряю","теряешь","теряет","теряем","теряете","теряют"],
+   fut:["потеряю","потеряешь","потеряет","потеряем","потеряете","потеряют"],
+   past:["терял","теряла","теряло","теряли"]},
+  {imp:"искать",pf:"найти",en:"to search / look for",
+   pres:["ищу","ищешь","ищет","ищем","ищете","ищут"],
+   fut:["найду","найдёшь","найдёт","найдём","найдёте","найдут"],
+   past:["искал","искала","искало","искали"]},
+  {imp:"ждать",pf:"подождать",en:"to wait",
+   pres:["жду","ждёшь","ждёт","ждём","ждёте","ждут"],
+   fut:["подожду","подождёшь","подождёт","подождём","подождёте","подождут"],
+   past:["ждал","ждала","ждало","ждали"]},
+  {imp:"встречать",pf:"встретить",en:"to meet",
+   pres:["встречаю","встречаешь","встречает","встречаем","встречаете","встречают"],
+   fut:["встречу","встретишь","встретит","встретим","встретите","встретят"],
+   past:["встречал","встречала","встречало","встречали"]},
+  {imp:"знакомиться",pf:"познакомиться",en:"to get acquainted",
+   pres:["знакомлюсь","знакомишься","знакомится","знакомимся","знакомитесь","знакомятся"],
+   fut:["познакомлюсь","познакомишься","познакомится","познакомимся","познакомитесь","познакомятся"],
+   past:["знакомился","знакомилась","знакомилось","знакомились"]},
+  {imp:"расставаться",pf:"расстаться",en:"to part / say goodbye",
+   pres:["расстаюсь","расстаёшься","расстаётся","расстаёмся","расстаётесь","расстаются"],
+   fut:["расстанусь","расстанешься","расстанется","расстанемся","расстанетесь","расстанутся"],
+   past:["расставался","расставалась","расставалось","расставались"]},
+  {imp:"влюбляться",pf:"влюбиться",en:"to fall in love",
+   pres:["влюбляюсь","влюбляешься","влюбляется","влюбляемся","влюбляетесь","влюбляются"],
+   fut:["влюблюсь","влюбишься","влюбится","влюбимся","влюбитесь","влюбятся"],
+   past:["влюблялся","влюблялась","влюблялось","влюблялись"]},
+
+  // 171-190
+  {imp:"жениться",pf:"жениться",en:"to get married (man)",
+   pres:["женюсь","женишься","женится","женимся","женитесь","женятся"],
+   fut:["женюсь","женишься","женится","женимся","женитесь","женятся"],
+   past:["женился","женилась","женилось","женились"]},
+  {imp:"строить",pf:"построить",en:"to build",
+   pres:["строю","строишь","строит","строим","строите","строят"],
+   fut:["построю","построишь","построит","построим","построите","построят"],
+   past:["строил","строила","строило","строили"]},
+  {imp:"ломать",pf:"сломать",en:"to break",
+   pres:["ломаю","ломаешь","ломает","ломаем","ломаете","ломают"],
+   fut:["сломаю","сломаешь","сломает","сломаем","сломаете","сломают"],
+   past:["ломал","ломала","ломало","ломали"]},
+  {imp:"чинить",pf:"починить",en:"to fix / repair",
+   pres:["чиню","чинишь","чинит","чиним","чините","чинят"],
+   fut:["починю","починишь","починит","починим","почините","починят"],
+   past:["чинил","чинила","чинило","чинили"]},
+  {imp:"убирать",pf:"убрать",en:"to clean up / tidy",
+   pres:["убираю","убираешь","убирает","убираем","убираете","убирают"],
+   fut:["уберу","уберёшь","уберёт","уберём","уберёте","уберут"],
+   past:["убирал","убирала","убирало","убирали"]},
+  {imp:"мыть",pf:"помыть",en:"to wash",
+   pres:["мою","моешь","моет","моем","моете","моют"],
+   fut:["помою","помоешь","помоет","помоем","помоете","помоют"],
+   past:["мыл","мыла","мыло","мыли"]},
+  {imp:"стирать",pf:"постирать",en:"to wash (laundry)",
+   pres:["стираю","стираешь","стирает","стираем","стираете","стирают"],
+   fut:["постираю","постираешь","постирает","постираем","постираете","постирают"],
+   past:["стирал","стирала","стирало","стирали"]},
+  {imp:"гладить",pf:"погладить",en:"to iron / stroke",
+   pres:["глажу","гладишь","гладит","гладим","гладите","гладят"],
+   fut:["поглажу","погладишь","погладит","погладим","погладите","погладят"],
+   past:["гладил","гладила","гладило","гладили"]},
+  {imp:"варить",pf:"сварить",en:"to boil / cook",
+   pres:["варю","варишь","варит","варим","варите","варят"],
+   fut:["сварю","сваришь","сварит","сварим","сварите","сварят"],
+   past:["варил","варила","варило","варили"]},
+  {imp:"жарить",pf:"пожарить",en:"to fry",
+   pres:["жарю","жаришь","жарит","жарим","жарите","жарят"],
+   fut:["пожарю","пожаришь","пожарит","пожарим","пожарите","пожарят"],
+   past:["жарил","жарила","жарило","жарили"]},
+
+  // 191-210
+  {imp:"петь",pf:"спеть",en:"to sing",
+   pres:["пою","поёшь","поёт","поём","поёте","поют"],
+   fut:["спою","споёшь","споёт","споём","споёте","споют"],
+   past:["пел","пела","пело","пели"]},
+  {imp:"танцевать",pf:"станцевать",en:"to dance",
+   pres:["танцую","танцуешь","танцует","танцуем","танцуете","танцуют"],
+   fut:["станцую","станцуешь","станцует","станцуем","станцуете","станцуют"],
+   past:["танцевал","танцевала","танцевало","танцевали"]},
+  {imp:"играть",pf:"сыграть",en:"to play",
+   pres:["играю","играешь","играет","играем","играете","играют"],
+   fut:["сыграю","сыграешь","сыграет","сыграем","сыграете","сыграют"],
+   past:["играл","играла","играло","играли"]},
+  {imp:"рисовать",pf:"нарисовать",en:"to draw",
+   pres:["рисую","рисуешь","рисует","рисуем","рисуете","рисуют"],
+   fut:["нарисую","нарисуешь","нарисует","нарисуем","нарисуете","нарисуют"],
+   past:["рисовал","рисовала","рисовало","рисовали"]},
+  {imp:"фотографировать",pf:"сфотографировать",en:"to photograph",
+   pres:["фотографирую","фотографируешь","фотографирует","фотографируем","фотографируете","фотографируют"],
+   fut:["сфотографирую","сфотографируешь","сфотографирует","сфотографируем","сфотографируете","сфотографируют"],
+   past:["фотографировал","фотографировала","фотографировало","фотографировали"]},
+  {imp:"снимать",pf:"снять",en:"to take off / film",
+   pres:["снимаю","снимаешь","снимает","снимаем","снимаете","снимают"],
+   fut:["сниму","снимешь","снимет","снимем","снимете","снимут"],
+   past:["снимал","снимала","снимало","снимали"]},
+  {imp:"надевать",pf:"надеть",en:"to put on (clothing)",
+   pres:["надеваю","надеваешь","надевает","надеваем","надеваете","надевают"],
+   fut:["надену","наденешь","наденет","наденем","наденете","наденут"],
+   past:["надевал","надевала","надевало","надевали"]},
+  {imp:"одеваться",pf:"одеться",en:"to get dressed",
+   pres:["одеваюсь","одеваешься","одевается","одеваемся","одеваетесь","одеваются"],
+   fut:["оденусь","оденешься","оденется","оденемся","оденетесь","оденутся"],
+   past:["одевался","одевалась","одевалось","одевались"]},
+  {imp:"раздеваться",pf:"раздеться",en:"to undress",
+   pres:["раздеваюсь","раздеваешься","раздевается","раздеваемся","раздеваетесь","раздеваются"],
+   fut:["разденусь","разденешься","разденется","разденемся","разденетесь","разденутся"],
+   past:["раздевался","раздевалась","раздевалось","раздевались"]},
+  {imp:"умываться",pf:"умыться",en:"to wash one's face",
+   pres:["умываюсь","умываешься","умывается","умываемся","умываетесь","умываются"],
+   fut:["умоюсь","умоешься","умоется","умоемся","умоетесь","умоются"],
+   past:["умывался","умывалась","умывалось","умывались"]},
+
+  // 211-230
+  {imp:"чистить",pf:"почистить",en:"to clean / brush",
+   pres:["чищу","чистишь","чистит","чистим","чистите","чистят"],
+   fut:["почищу","почистишь","почистит","почистим","почистите","почистят"],
+   past:["чистил","чистила","чистило","чистили"]},
+  {imp:"причёсываться",pf:"причесаться",en:"to comb one's hair",
+   pres:["причёсываюсь","причёсываешься","причёсывается","причёсываемся","причёсываетесь","причёсываются"],
+   fut:["причешусь","причешешься","причешется","причешемся","причешетесь","причешутся"],
+   past:["причёсывался","причёсывалась","причёсывалось","причёсывались"]},
+  {imp:"бриться",pf:"побриться",en:"to shave",
+   pres:["бреюсь","бреешься","бреется","бреемся","бреетесь","бреются"],
+   fut:["побреюсь","побреешься","побреется","побреемся","побреетесь","побреются"],
+   past:["брился","брилась","брилось","брились"]},
+  {imp:"принимать",pf:"принять",en:"to accept / take",
+   pres:["принимаю","принимаешь","принимает","принимаем","принимаете","принимают"],
+   fut:["приму","примешь","примет","примем","примете","примут"],
+   past:["принимал","принимала","принимало","принимали"]},
+  {imp:"посылать",pf:"послать",en:"to send",
+   pres:["посылаю","посылаешь","посылает","посылаем","посылаете","посылают"],
+   fut:["пошлю","пошлёшь","пошлёт","пошлём","пошлёте","пошлют"],
+   past:["посылал","посылала","посылало","посылали"]},
+  {imp:"передавать",pf:"передать",en:"to pass on / transmit",
+   pres:["передаю","передаёшь","передаёт","передаём","передаёте","передают"],
+   fut:["передам","передашь","передаст","передадим","передадите","передадут"],
+   past:["передавал","передавала","передавало","передавали"]},
+  {imp:"просить",pf:"попросить",en:"to ask / request",
+   pres:["прошу","просишь","просит","просим","просите","просят"],
+   fut:["попрошу","попросишь","попросит","попросим","попросите","попросят"],
+   past:["просил","просила","просило","просили"]},
+  {imp:"требовать",pf:"потребовать",en:"to demand / require",
+   pres:["требую","требуешь","требует","требуем","требуете","требуют"],
+   fut:["потребую","потребуешь","потребует","потребуем","потребуете","потребуют"],
+   past:["требовал","требовала","требовало","требовали"]},
+  {imp:"предлагать",pf:"предложить",en:"to offer / suggest",
+   pres:["предлагаю","предлагаешь","предлагает","предлагаем","предлагаете","предлагают"],
+   fut:["предложу","предложишь","предложит","предложим","предложите","предложат"],
+   past:["предлагал","предлагала","предлагало","предлагали"]},
+  {imp:"советовать",pf:"посоветовать",en:"to advise",
+   pres:["советую","советуешь","советует","советуем","советуете","советуют"],
+   fut:["посоветую","посоветуешь","посоветует","посоветуем","посоветуете","посоветуют"],
+   past:["советовал","советовала","советовало","советовали"]},
+
+  // 231-250
+  {imp:"разрешать",pf:"разрешить",en:"to allow / permit",
+   pres:["разрешаю","разрешаешь","разрешает","разрешаем","разрешаете","разрешают"],
+   fut:["разрешу","разрешишь","разрешит","разрешим","разрешите","разрешат"],
+   past:["разрешал","разрешала","разрешало","разрешали"]},
+  {imp:"запрещать",pf:"запретить",en:"to forbid / prohibit",
+   pres:["запрещаю","запрещаешь","запрещает","запрещаем","запрещаете","запрещают"],
+   fut:["запрещу","запретишь","запретит","запретим","запретите","запретят"],
+   past:["запрещал","запрещала","запрещало","запрещали"]},
+  {imp:"соглашаться",pf:"согласиться",en:"to agree",
+   pres:["соглашаюсь","соглашаешься","соглашается","соглашаемся","соглашаетесь","соглашаются"],
+   fut:["соглашусь","согласишься","согласится","согласимся","согласитесь","согласятся"],
+   past:["соглашался","соглашалась","соглашалось","соглашались"]},
+  {imp:"отказываться",pf:"отказаться",en:"to refuse",
+   pres:["отказываюсь","отказываешься","отказывается","отказываемся","отказываетесь","отказываются"],
+   fut:["откажусь","откажешься","откажется","откажемся","откажетесь","откажутся"],
+   past:["отказывался","отказывалась","отказывалось","отказывались"]},
+  {imp:"верить",pf:"поверить",en:"to believe",
+   pres:["верю","веришь","верит","верим","верите","верят"],
+   fut:["поверю","поверишь","поверит","поверим","поверите","поверят"],
+   past:["верил","верила","верило","верили"]},
+  {imp:"надеяться",pf:"понадеяться",en:"to hope",
+   pres:["надеюсь","надеешься","надеется","надеемся","надеетесь","надеются"],
+   fut:["понадеюсь","понадеешься","понадеется","понадеемся","понадеетесь","понадеются"],
+   past:["надеялся","надеялась","надеялось","надеялись"]},
+  {imp:"мечтать",pf:"помечтать",en:"to dream",
+   pres:["мечтаю","мечтаешь","мечтает","мечтаем","мечтаете","мечтают"],
+   fut:["помечтаю","помечтаешь","помечтает","помечтаем","помечтаете","помечтают"],
+   past:["мечтал","мечтала","мечтало","мечтали"]},
+  {imp:"завидовать",pf:"позавидовать",en:"to envy",
+   pres:["завидую","завидуешь","завидует","завидуем","завидуете","завидуют"],
+   fut:["позавидую","позавидуешь","позавидует","позавидуем","позавидуете","позавидуют"],
+   past:["завидовал","завидовала","завидовало","завидовали"]},
+  {imp:"прощать",pf:"простить",en:"to forgive",
+   pres:["прощаю","прощаешь","прощает","прощаем","прощаете","прощают"],
+   fut:["прощу","простишь","простит","простим","простите","простят"],
+   past:["прощал","прощала","прощало","прощали"]},
+  {imp:"ругать",pf:"поругать",en:"to scold",
+   pres:["ругаю","ругаешь","ругает","ругаем","ругаете","ругают"],
+   fut:["поругаю","поругаешь","поругает","поругаем","поругаете","поругают"],
+   past:["ругал","ругала","ругало","ругали"]},
+
+  // 251-270
+  {imp:"ссориться",pf:"поссориться",en:"to quarrel",
+   pres:["ссорюсь","ссоришься","ссорится","ссоримся","ссоритесь","ссорятся"],
+   fut:["поссорюсь","поссоришься","поссорится","поссоримся","поссоритесь","поссорятся"],
+   past:["ссорился","ссорилась","ссорилось","ссорились"]},
+  {imp:"мириться",pf:"помириться",en:"to make peace / reconcile",
+   pres:["мирюсь","миришься","мирится","миримся","миритесь","мирятся"],
+   fut:["помирюсь","помиришься","помирится","помиримся","помиритесь","помирятся"],
+   past:["мирился","мирилась","мирилось","мирились"]},
+  {imp:"обнимать",pf:"обнять",en:"to hug",
+   pres:["обнимаю","обнимаешь","обнимает","обнимаем","обнимаете","обнимают"],
+   fut:["обниму","обнимешь","обнимет","обнимем","обнимете","обнимут"],
+   past:["обнимал","обнимала","обнимало","обнимали"]},
+  {imp:"целовать",pf:"поцеловать",en:"to kiss",
+   pres:["целую","целуешь","целует","целуем","целуете","целуют"],
+   fut:["поцелую","поцелуешь","поцелует","поцелуем","поцелуете","поцелуют"],
+   past:["целовал","целовала","целовало","целовали"]},
+  {imp:"защищать",pf:"защитить",en:"to protect / defend",
+   pres:["защищаю","защищаешь","защищает","защищаем","защищаете","защищают"],
+   fut:["защищу","защитишь","защитит","защитим","защитите","защитят"],
+   past:["защищал","защищала","защищало","защищали"]},
+  {imp:"мешать",pf:"помешать",en:"to interfere / bother",
+   pres:["мешаю","мешаешь","мешает","мешаем","мешаете","мешают"],
+   fut:["помешаю","помешаешь","помешает","помешаем","помешаете","помешают"],
+   past:["мешал","мешала","мешало","мешали"]},
+  {imp:"бить",pf:"побить",en:"to hit / beat",
+   pres:["бью","бьёшь","бьёт","бьём","бьёте","бьют"],
+   fut:["побью","побьёшь","побьёт","побьём","побьёте","побьют"],
+   past:["бил","била","било","били"]},
+  {imp:"кричать",pf:"закричать",en:"to shout / yell",
+   pres:["кричу","кричишь","кричит","кричим","кричите","кричат"],
+   fut:["закричу","закричишь","закричит","закричим","закричите","закричат"],
+   past:["кричал","кричала","кричало","кричали"]},
+  {imp:"шептать",pf:"прошептать",en:"to whisper",
+   pres:["шепчу","шепчешь","шепчет","шепчем","шепчете","шепчут"],
+   fut:["прошепчу","прошепчешь","прошепчет","прошепчем","прошепчете","прошепчут"],
+   past:["шептал","шептала","шептало","шептали"]},
+  {imp:"молчать",pf:"промолчать",en:"to be silent",
+   pres:["молчу","молчишь","молчит","молчим","молчите","молчат"],
+   fut:["промолчу","промолчишь","промолчит","промолчим","промолчите","промолчат"],
+   past:["молчал","молчала","молчало","молчали"]},
+
+  // 271-290
+  {imp:"вспоминать",pf:"вспомнить",en:"to recall / remember",
+   pres:["вспоминаю","вспоминаешь","вспоминает","вспоминаем","вспоминаете","вспоминают"],
+   fut:["вспомню","вспомнишь","вспомнит","вспомним","вспомните","вспомнят"],
+   past:["вспоминал","вспоминала","вспоминало","вспоминали"]},
+  {imp:"предполагать",pf:"предположить",en:"to suppose / assume",
+   pres:["предполагаю","предполагаешь","предполагает","предполагаем","предполагаете","предполагают"],
+   fut:["предположу","предположишь","предположит","предположим","предположите","предположат"],
+   past:["предполагал","предполагала","предполагало","предполагали"]},
+  {imp:"доверять",pf:"довериться",en:"to trust",
+   pres:["доверяю","доверяешь","доверяет","доверяем","доверяете","доверяют"],
+   fut:["доверюсь","доверишься","доверится","доверимся","доверитесь","доверятся"],
+   past:["доверял","доверяла","доверяло","доверяли"]},
+  {imp:"сравнивать",pf:"сравнить",en:"to compare",
+   pres:["сравниваю","сравниваешь","сравнивает","сравниваем","сравниваете","сравнивают"],
+   fut:["сравню","сравнишь","сравнит","сравним","сравните","сравнят"],
+   past:["сравнивал","сравнивала","сравнивало","сравнивали"]},
+  {imp:"считать",pf:"посчитать",en:"to count / consider",
+   pres:["считаю","считаешь","считает","считаем","считаете","считают"],
+   fut:["посчитаю","посчитаешь","посчитает","посчитаем","посчитаете","посчитают"],
+   past:["считал","считала","считало","считали"]},
+  {imp:"проверять",pf:"проверить",en:"to check / verify",
+   pres:["проверяю","проверяешь","проверяет","проверяем","проверяете","проверяют"],
+   fut:["проверю","проверишь","проверит","проверим","проверите","проверят"],
+   past:["проверял","проверяла","проверяло","проверяли"]},
+  {imp:"исправлять",pf:"исправить",en:"to correct / fix",
+   pres:["исправляю","исправляешь","исправляет","исправляем","исправляете","исправляют"],
+   fut:["исправлю","исправишь","исправит","исправим","исправите","исправят"],
+   past:["исправлял","исправляла","исправляло","исправляли"]},
+  {imp:"повторять",pf:"повторить",en:"to repeat",
+   pres:["повторяю","повторяешь","повторяет","повторяем","повторяете","повторяют"],
+   fut:["повторю","повторишь","повторит","повторим","повторите","повторят"],
+   past:["повторял","повторяла","повторяло","повторяли"]},
+  {imp:"переводить",pf:"перевести",en:"to translate / transfer",
+   pres:["перевожу","переводишь","переводит","переводим","переводите","переводят"],
+   fut:["переведу","переведёшь","переведёт","переведём","переведёте","переведут"],
+   past:["переводил","переводила","переводило","переводили"]},
+  {imp:"объединять",pf:"объединить",en:"to unite / combine",
+   pres:["объединяю","объединяешь","объединяет","объединяем","объединяете","объединяют"],
+   fut:["объединю","объединишь","объединит","объединим","объедините","объединят"],
+   past:["объединял","объединяла","объединяло","объединяли"]},
+
+  // 291-300
+  {imp:"участвовать",pf:"поучаствовать",en:"to participate",
+   pres:["участвую","участвуешь","участвует","участвуем","участвуете","участвуют"],
+   fut:["поучаствую","поучаствуешь","поучаствует","поучаствуем","поучаствуете","поучаствуют"],
+   past:["участвовал","участвовала","участвовало","участвовали"]},
+  {imp:"зависеть",pf:"—",en:"to depend",
+   pres:["завишу","зависишь","зависит","зависим","зависите","зависят"],
+   fut:["буду зависеть","будешь зависеть","будет зависеть","будем зависеть","будете зависеть","будут зависеть"],
+   past:["зависел","зависела","зависело","зависели"]},
+  {imp:"следовать",pf:"последовать",en:"to follow",
+   pres:["следую","следуешь","следует","следуем","следуете","следуют"],
+   fut:["последую","последуешь","последует","последуем","последуете","последуют"],
+   past:["следовал","следовала","следовало","следовали"]},
+  {imp:"происходить",pf:"произойти",en:"to happen / occur",
+   pres:["происхожу","происходишь","происходит","происходим","происходите","происходят"],
+   fut:["произойду","произойдёшь","произойдёт","произойдём","произойдёте","произойдут"],
+   past:["происходил","происходила","происходило","происходили"]},
+  {imp:"оказываться",pf:"оказаться",en:"to turn out / end up",
+   pres:["оказываюсь","оказываешься","оказывается","оказываемся","оказываетесь","оказываются"],
+   fut:["окажусь","окажешься","окажется","окажемся","окажетесь","окажутся"],
+   past:["оказывался","оказывалась","оказывалось","оказывались"]},
+  {imp:"называть",pf:"назвать",en:"to name / call",
+   pres:["называю","называешь","называет","называем","называете","называют"],
+   fut:["назову","назовёшь","назовёт","назовём","назовёте","назовут"],
+   past:["называл","называла","называло","называли"]},
+  {imp:"считаться",pf:"посчитаться",en:"to be considered",
+   pres:["считаюсь","считаешься","считается","считаемся","считаетесь","считаются"],
+   fut:["посчитаюсь","посчитаешься","посчитается","посчитаемся","посчитаетесь","посчитаются"],
+   past:["считался","считалась","считалось","считались"]},
+  {imp:"относиться",pf:"отнестись",en:"to relate / treat",
+   pres:["отношусь","относишься","относится","относимся","относитесь","относятся"],
+   fut:["отнесусь","отнесёшься","отнесётся","отнесёмся","отнесётесь","отнесутся"],
+   past:["относился","относилась","относилось","относились"]},
+  {imp:"отличаться",pf:"отличиться",en:"to differ / distinguish oneself",
+   pres:["отличаюсь","отличаешься","отличается","отличаемся","отличаетесь","отличаются"],
+   fut:["отличусь","отличишься","отличится","отличимся","отличитесь","отличатся"],
+   past:["отличался","отличалась","отличалось","отличались"]},
+  {imp:"развиваться",pf:"развиться",en:"to develop",
+   pres:["развиваюсь","развиваешься","развивается","развиваемся","развиваетесь","развиваются"],
+   fut:["разовьюсь","разовьёшься","разовьётся","разовьёмся","разовьётесь","разовьются"],
+   past:["развивался","развивалась","развивалось","развивались"]},
+];
+
+// ═══════════════════════════════════════════════════
+//  APP STATE
+// ═══════════════════════════════════════════════════
+const PRONOUNS = ["я","ты","он/она","мы","вы","они"];
+const PRONOUN_KEYS = ["ya","ty","on","my","vy","oni"]; // for reference
+
+let state = {
+  tenses: ["present","future"],
+  set: "all",
+  sessionLength: 10,
+  session: [],
+  sessionIdx: 0,
+  sessionCorrect: 0,
+  sessionTotal: 0,
+  checked: false,
+  totalCorrect: 0,
+  streak: 0,
+  progress: {}, // verbIdx -> {seen, correct, total}
+};
+
+// ═══════════════════════════════════════════════════
+//  STORAGE
+// ═══════════════════════════════════════════════════
+function saveProgress() {
+  localStorage.setItem('rv_progress', JSON.stringify({
+    progress: state.progress,
+    totalCorrect: state.totalCorrect,
+    streak: state.streak,
+  }));
+}
+
+function loadProgress() {
+  try {
+    const d = JSON.parse(localStorage.getItem('rv_progress') || '{}');
+    state.progress = d.progress || {};
+    state.totalCorrect = d.totalCorrect || 0;
+    state.streak = d.streak || 0;
+  } catch(e) {}
+}
+
+// ═══════════════════════════════════════════════════
+//  HOME SCREEN
+// ═══════════════════════════════════════════════════
+document.querySelectorAll('.option-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const group = this.dataset.group;
+    if (group === 'tense') {
+      this.classList.toggle('selected');
+    } else {
+      document.querySelectorAll(`.option-btn[data-group="${group}"]`)
+        .forEach(b => b.classList.remove('selected'));
+      this.classList.add('selected');
+    }
+  });
+});
+
+function getSelectedTenses() {
+  const selected = [];
+  document.querySelectorAll('.option-btn[data-group="tense"].selected').forEach(b => {
+    selected.push(b.dataset.val);
+  });
+  return selected.length ? selected : ['present'];
+}
+
+function getSelectedSet() {
+  const sel = document.querySelector('.option-btn[data-group="set"].selected');
+  return sel ? sel.dataset.val : 'all';
+}
+
+function getSelectedLength() {
+  const sel = document.querySelector('.option-btn[data-group="length"].selected');
+  return sel ? sel.dataset.val : '10';
+}
+
+function updateHomeStats() {
+  const seen = Object.keys(state.progress).length;
+  const mastered = Object.values(state.progress).filter(p => p.total >= 3 && p.correct/p.total >= 0.8).length;
+  const totalAns = Object.values(state.progress).reduce((a,p) => a + p.total, 0);
+  const totalCor = Object.values(state.progress).reduce((a,p) => a + p.correct, 0);
+  document.getElementById('prog-seen').textContent = seen;
+  document.getElementById('prog-mastered').textContent = mastered;
+  document.getElementById('prog-accuracy').textContent = totalAns > 0 ? Math.round(totalCor/totalAns*100)+'%' : '—';
+}
+
+function startSession() {
+  const tenses = getSelectedTenses();
+  const set = getSelectedSet();
+  const lenStr = getSelectedLength();
+
+  let pool = VERBS.map((v,i) => i);
+
+  if (set === 'common') pool = pool.slice(0, 100);
+  else if (set === 'weak') {
+    pool = pool.filter(i => {
+      const p = state.progress[i];
+      if (!p || p.total === 0) return true;
+      return p.correct/p.total < 0.7;
+    });
+    if (!pool.length) pool = VERBS.map((_,i) => i);
+  } else if (set === 'unseen') {
+    pool = pool.filter(i => !state.progress[i]);
+    if (!pool.length) pool = VERBS.map((_,i) => i);
+  }
+
+  // Shuffle
+  for (let i = pool.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i+1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+
+  const len = lenStr === 'all' ? pool.length : Math.min(parseInt(lenStr), pool.length);
+  state.session = pool.slice(0, len);
+  state.sessionIdx = 0;
+  state.sessionCorrect = 0;
+  state.sessionTotal = 0;
+  state.tenses = tenses;
+  state.checked = false;
+
+  showScreen('practice-screen');
+  document.getElementById('action-bar').style.display = 'flex';
+  loadVerb();
+}
+
+// ═══════════════════════════════════════════════════
+//  PRACTICE
+// ═══════════════════════════════════════════════════
+function loadVerb() {
+  state.checked = false;
+  const verbIdx = state.session[state.sessionIdx];
+  const verb = VERBS[verbIdx];
+  const total = state.session.length;
+
+  // Update progress bar
+  const pct = (state.sessionIdx / total) * 100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('sess-count').textContent = `Verb ${state.sessionIdx+1} of ${total}`;
+  document.getElementById('sess-score').textContent = `Score: ${state.sessionCorrect}/${state.sessionTotal}`;
+
+  // Verb header
+  document.getElementById('verb-display').textContent =
+    verb.pf === '—' ? verb.imp : `${verb.imp} / ${verb.pf}`;
+  document.getElementById('verb-meaning').textContent = verb.en;
+  document.getElementById('verb-aspect-label').textContent =
+    verb.pf === '—' ? 'imperfective only' : 'imperfective / perfective';
+
+  // Hide result banner
+  const banner = document.getElementById('result-banner');
+  banner.classList.remove('visible');
+
+  // Build tense sections
+  const showPresent = state.tenses.includes('present');
+  const showFuture = state.tenses.includes('future') || state.tenses.includes('past');
+  const showPast = state.tenses.includes('past');
+
+  const presSection = document.getElementById('present-section');
+  const futSection = document.getElementById('future-section');
+
+  if (showPresent) {
+    presSection.style.display = 'block';
+    document.getElementById('present-tense-label').textContent = 'Present Tense';
+    document.getElementById('present-aspect-tag').textContent = 'imperfective';
+    buildRows('present-rows', verb.pres, 'pres');
+  } else {
+    presSection.style.display = 'none';
+  }
+
+  if (showPast) {
+    futSection.style.display = 'block';
+    document.getElementById('future-tense-label').textContent = 'Past Tense';
+    document.getElementById('future-aspect-tag').textContent = 'past';
+    // past: м/ф/н/мн — use simplified pronoun labels
+    buildRowsPast('future-rows', verb.past);
+  } else if (showFuture) {
+    futSection.style.display = 'block';
+    document.getElementById('future-tense-label').textContent = verb.pf === '—' ? 'Future Tense (compound)' : 'Future Tense';
+    document.getElementById('future-aspect-tag').textContent = verb.pf === '—' ? 'imperfective' : 'perfective';
+    buildRows('future-rows', verb.fut, 'fut');
+  } else {
+    futSection.style.display = 'none';
+  }
+
+  // Reset check button
+  const checkBtn = document.getElementById('check-btn');
+  checkBtn.textContent = 'Check';
+  checkBtn.className = 'action-btn btn-check';
+  checkBtn.onclick = checkAnswers;
+
+  // Focus first input
+  setTimeout(() => {
+    const first = document.querySelector('.conj-input');
+    if (first) first.focus();
+  }, 100);
+}
+
+function buildRows(containerId, answers, prefix) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  PRONOUNS.forEach((pron, i) => {
+    const ans = answers[i] || '—';
+    const row = document.createElement('div');
+    row.className = 'conjugation-row';
+    row.dataset.answer = ans.toLowerCase();
+    row.innerHTML = `
+      <div class="pronoun">${pron}</div>
+      <input class="conj-input" type="text" autocomplete="off" autocorrect="off"
+        autocapitalize="none" spellcheck="false"
+        placeholder="type conjugation…"
+        inputmode="text"
+        data-idx="${i}" data-prefix="${prefix}">
+      <div class="answer-reveal">${ans}</div>
+    `;
+    container.appendChild(row);
+  });
+
+  // Tab to advance
+  container.querySelectorAll('.conj-input').forEach((inp, i, all) => {
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === 'Tab') {
+        e.preventDefault();
+        if (i < all.length - 1) all[i+1].focus();
+        else {
+          // Move to next section or check
+          const nextSectionInputs = getNextSectionInput(inp);
+          if (nextSectionInputs) nextSectionInputs.focus();
+          else if (!state.checked) checkAnswers();
+        }
+      }
+    });
+  });
+}
+
+function buildRowsPast(containerId, answers) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  const pastPronouns = ["он (м)","она (ж)","оно (ср)","они (мн)"];
+  pastPronouns.forEach((pron, i) => {
+    const ans = answers[i] || '—';
+    const row = document.createElement('div');
+    row.className = 'conjugation-row';
+    row.dataset.answer = ans.toLowerCase();
+    row.innerHTML = `
+      <div class="pronoun">${pron}</div>
+      <input class="conj-input" type="text" autocomplete="off" autocorrect="off"
+        autocapitalize="none" spellcheck="false"
+        placeholder="type conjugation…"
+        inputmode="text"
+        data-idx="${i}" data-prefix="past">
+      <div class="answer-reveal">${ans}</div>
+    `;
+    container.appendChild(row);
+  });
+
+  container.querySelectorAll('.conj-input').forEach((inp, i, all) => {
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === 'Tab') {
+        e.preventDefault();
+        if (i < all.length - 1) all[i+1].focus();
+        else if (!state.checked) checkAnswers();
+      }
+    });
+  });
+}
+
+function getNextSectionInput(currentInput) {
+  const allInputs = Array.from(document.querySelectorAll('.conj-input'));
+  const idx = allInputs.indexOf(currentInput);
+  return allInputs[idx + 1] || null;
+}
+
+function normalize(s) {
+  return s.trim().toLowerCase()
+    .replace(/ё/g, 'е') // allow е for ё
+    .replace(/\s+/g, ' ');
+}
+
+function checkAnswers() {
+  if (state.checked) { nextVerb(); return; }
+  state.checked = true;
+
+  let correct = 0, total = 0;
+  const rows = document.querySelectorAll('.conjugation-row');
+  rows.forEach(row => {
+    const input = row.querySelector('.conj-input');
+    const expected = row.dataset.answer;
+    const given = normalize(input.value);
+    const exp = normalize(expected);
+
+    if (exp === '—') {
+      row.classList.add('correct');
+      input.classList.add('correct-input');
+      return;
+    }
+
+    total++;
+    const isCorrect = given === exp || normalize(given) === normalize(exp);
+    if (isCorrect) {
+      correct++;
+      row.classList.add('correct');
+      input.classList.add('correct-input');
+    } else {
+      row.classList.add('wrong');
+      input.classList.add('wrong-input');
+    }
+    input.readOnly = true;
+  });
+
+  state.sessionCorrect += correct;
+  state.sessionTotal += total;
+
+  // Update verb progress
+  const verbIdx = state.session[state.sessionIdx];
+  if (!state.progress[verbIdx]) state.progress[verbIdx] = {seen:0,correct:0,total:0};
+  state.progress[verbIdx].seen++;
+  state.progress[verbIdx].correct += correct;
+  state.progress[verbIdx].total += total;
+  saveProgress();
+
+  // Update streak
+  if (correct === total && total > 0) {
+    state.streak++;
+  } else {
+    state.streak = 0;
+  }
+  updateHeader();
+
+  // Show result
+  const banner = document.getElementById('result-banner');
+  banner.classList.add('visible');
+  const pct = total > 0 ? Math.round(correct/total*100) : 100;
+  const emoji = pct === 100 ? '🎉' : pct >= 60 ? '👍' : '😬';
+  document.getElementById('result-emoji').textContent = emoji;
+  const scoreEl = document.getElementById('result-score');
+  scoreEl.textContent = `${correct}/${total} correct (${pct}%)`;
+  scoreEl.className = 'result-score ' + (pct === 100 ? 'all-correct' : pct >= 60 ? 'partial' : 'poor');
+  document.getElementById('result-text').textContent =
+    pct === 100 ? 'Perfect! All correct.' :
+    pct >= 60 ? 'Good job! Review the red ones.' :
+    'Keep practicing!';
+
+  // Change button to Next
+  const checkBtn = document.getElementById('check-btn');
+  checkBtn.textContent = state.sessionIdx < state.session.length - 1 ? 'Next →' : 'Finish';
+  checkBtn.className = 'action-btn btn-next';
+  checkBtn.onclick = nextVerb;
+
+  // Update score display
+  document.getElementById('sess-score').textContent =
+    `Score: ${state.sessionCorrect}/${state.sessionTotal}`;
+}
+
+function nextVerb() {
+  state.sessionIdx++;
+  if (state.sessionIdx >= state.session.length) {
+    finishSession();
+    return;
+  }
+  loadVerb();
+}
+
+function skipVerb() {
+  state.sessionIdx++;
+  if (state.sessionIdx >= state.session.length) {
+    finishSession();
+    return;
+  }
+  loadVerb();
+}
+
+function finishSession() {
+  showScreen('home-screen');
+  document.getElementById('action-bar').style.display = 'none';
+  updateHomeStats();
+
+  const pct = state.sessionTotal > 0
+    ? Math.round(state.sessionCorrect / state.sessionTotal * 100) : 0;
+  alert(`Session complete!\n${state.sessionCorrect}/${state.sessionTotal} correct (${pct}%)\nStreak: ${state.streak} 🔥`);
+}
+
+// ═══════════════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function showHome() {
+  showScreen('home-screen');
+  document.getElementById('action-bar').style.display = 'none';
+  updateHomeStats();
+}
+
+function updateHeader() {
+  document.querySelector('#hdr-correct b').textContent = state.totalCorrect + state.sessionCorrect;
+  document.querySelector('#hdr-streak b').textContent = state.streak;
+}
+
+// ═══════════════════════════════════════════════════
+//  MENU
+// ═══════════════════════════════════════════════════
+function toggleMenu() {
+  document.getElementById('menu-screen').classList.toggle('active');
+}
+
+function closeMenu() {
+  document.getElementById('menu-screen').classList.remove('active');
+}
+
+function closeMenuIfBg(e) {
+  if (e.target === document.getElementById('menu-screen')) closeMenu();
+}
+
+function resetProgress() {
+  if (confirm('Reset all progress? This cannot be undone.')) {
+    localStorage.removeItem('rv_progress');
+    state.progress = {};
+    state.totalCorrect = 0;
+    state.streak = 0;
+    updateHomeStats();
+    updateHeader();
+  }
+}
+
+// ═══════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════
+loadProgress();
+updateHomeStats();
+updateHeader();
+</script>
+</body>
+</html>
